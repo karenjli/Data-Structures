@@ -1,7 +1,5 @@
 
 from doubly_linked_list import ListNode, DoublyLinkedList
-import sys
-sys.path.append('./doubly_linked_list')
 
 
 class LRUCache:
@@ -16,8 +14,8 @@ class LRUCache:
     def __init__(self,  limit=10):
         self.limit = limit
         self.size = 0
-        self.list = DoublyLinkedList()
-        self.cache = dict()
+        self.order = DoublyLinkedList()
+        self.storage = dict()
 
     """
     Retrieves the value associated with the given key. Also
@@ -29,11 +27,11 @@ class LRUCache:
 
     def get(self, key):
         # Is key in cache?
-        if key in self.cache.keys():
+        if key in self.storage:
             # node equals the value of the key
-            node = self.cache[key]
+            node = self.storage[key]
             # Add the key-value pair to the head of the list
-            self.list.move_to_front(node)
+            self.order.move_to_end(node)
             # Return the first value of the list
             return node.value[1]
         else:
@@ -53,18 +51,39 @@ class LRUCache:
 
     def set(self, key, value):
         # Check if key is already there
-        if key in self.cache.keys():
-            # If yes, identify the node
-            node = self.cache[key]
-            node.value = (key, value)
-            self.list.move_to_front(node)
-            return self.list.head
-        else:
-            if self.size == self.limit:
-                del self.cache[self.list.remove_from_tail()[0]]
-                self.size -= 1
+        # if key in self.cache.keys():
+        #     # If yes, identify the node
+        #     node = self.cache[key]
+        #     node.value = (key, value)
+        #     self.list.move_to_front(node)
+        #     return self.list.head
+        # else:
+        #     if self.size == self.limit:
+        #         del self.cache[self.list.remove_from_tail()[0]]
+        #         self.size -= 1
 
-            new_cache = (key, value)
-            self.list.add_to_head(new_cache)
-            self.cache[key] = self.list.head
-            self.size += 1
+        #     new_cache = (key, value)
+        #     self.list.add_to_head(new_cache)
+        #     self.cache[key] = self.list.head
+        #     self.size += 1
+
+        # Create a node if key not found and move to front
+        # Move node to front if key found
+        # If full remove last node from linked list and dictionary
+
+        if key in self.storage:
+            node = self.storage[key]
+            node.value = (key, value)
+            self.order.move_to_end(node)
+            return
+
+        if self.size == self.limit:
+            del self.storage[self.order.head.value[0]]
+            self.order.remove_from_head()
+            self.size -= 1
+
+        # add to the end of the list
+        self.order.add_to_tail((key, value))
+        # set the cache
+        self.storage[key] = self.order.tail
+        self.size += 1
